@@ -24,7 +24,7 @@ public:
     //static int objectId(const Jsoner::Object &object);
 
 private:
-    static void registerResponse(RestLink::Response *response, const std::function<RestLink::ApiRunCallback> &callback, const DataGate::DataQueryProgressCallback &onProgress);
+    static void registerResponse(RestLink::Response *response, const RestLink::ApiRunCallback &callback, const DataGate::DataQueryProgressCallback &onProgress);
     RestLink::Api *m_api;
 };
 

@@ -140,7 +140,7 @@ QString LaravelRestController::endpoint(const DataGate::DataQuery &query)
     return query.parameter("endpoint").toString();
 }
 
-void LaravelRestController::registerResponse(RestLink::Response *response, const std::function<RestLink::ApiRunCallback> &callback, const DataGate::DataQueryProgressCallback &onProgress)
+void LaravelRestController::registerResponse(RestLink::Response *response, const RestLink::ApiRunCallback &callback, const DataGate::DataQueryProgressCallback &onProgress)
 {
     QObject::connect(response, &RestLink::Response::downloadProgress, response, onProgress);
     QObject::connect(response, &RestLink::Response::finished, response, callback);
