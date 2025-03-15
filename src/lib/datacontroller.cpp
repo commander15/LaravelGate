@@ -1,4 +1,4 @@
-#include "laravelrestcontroller.h"
+#include "datacontroller.h"
 
 #include <DataGate/dataquery.h>
 #include <DataGate/dataresponse.h>
@@ -12,16 +12,21 @@
 
 #include <QtCore/qvariant.h>
 
-LaravelRestController::LaravelRestController(RestLink::Api *api)
+namespace LaravelGate {
+
+DataController::DataController(RestLink::Api *api)
     : m_api(api)
 {
 }
 
-LaravelRestController::~LaravelRestController()
+void DataController::registerResponse(RestLink::Response *response, const RestLink::ApiRunCallback &callback, const DataGate::DataQueryProgressCallback &onProgress)
 {
+    QObject::connect(response, &RestLink::Response::downloadProgress, response, onProgress);
+    QObject::connect(response, &RestLink::Response::finished, response, [callback, response] { callback(response); });
+    QObject::connect(response, &RestLink::Response::finished, response, &QObject::deleteLater);
 }
 
-void LaravelRestController::fetchSomeSearchSuggestions(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
+void DataController::fetchSomeSearchSuggestions(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
 {
     RestLink::Request request(endpoint(query) + "/search/suggestions");
     request.addQueryParameter("query", query.string());
@@ -37,7 +42,7 @@ void LaravelRestController::fetchSomeSearchSuggestions(const DataGate::DataQuery
     registerResponse(response, processing, onProgress);
 }
 
-void LaravelRestController::fetchManyObjects(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
+void DataController::fetchManyObjects(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
 {
     RestLink::Request request(endpoint(query));
     request.addQueryParameter("query", query.string());
@@ -50,6 +55,11 @@ void LaravelRestController::fetchManyObjects(const DataGate::DataQuery &query, c
         res.setArray(object.array("data"));
         res.setPage(object.integer("current_page"));
         res.setPageCount(object.integer("last_page"));
+
+        const QStringList fields = { "from", "to", "per_page", "total" };
+        for (const QString &field : fields)
+            res.setData(field, object.variant(field));
+
         onResponse(res);
     };
 
@@ -57,7 +67,7 @@ void LaravelRestController::fetchManyObjects(const DataGate::DataQuery &query, c
     registerResponse(response, processing, onProgress);
 }
 
-void LaravelRestController::fetchOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
+void DataController::fetchOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
 {
     RestLink::Request request(endpoint(query));
     request.addQueryParameter("query", query.string());
@@ -73,7 +83,7 @@ void LaravelRestController::fetchOneObject(const DataGate::DataQuery &query, con
     registerResponse(response, processing, onProgress);
 }
 
-void LaravelRestController::addOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
+void DataController::addOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
 {
     RestLink::Request request(endpoint(query));
     request.addQueryParameter("query", query.string());
@@ -89,7 +99,7 @@ void LaravelRestController::addOneObject(const DataGate::DataQuery &query, const
     registerResponse(response, processing, onProgress);
 }
 
-void LaravelRestController::editOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
+void DataController::editOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
 {
     RestLink::Request request(endpoint(query) + '/' + query.object().string("id"));
     request.addQueryParameter("query", query.string());
@@ -105,7 +115,7 @@ void LaravelRestController::editOneObject(const DataGate::DataQuery &query, cons
     registerResponse(response, processing, onProgress);
 }
 
-void LaravelRestController::deleteManyObjects(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
+void DataController::deleteManyObjects(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse)
 {
     bool single = query.array().count() == 1;
 
@@ -135,14 +145,9 @@ void LaravelRestController::deleteManyObjects(const DataGate::DataQuery &query, 
     registerResponse(response, processing, onProgress);
 }
 
-QString LaravelRestController::endpoint(const DataGate::DataQuery &query)
+QString DataController::endpoint(const DataGate::DataQuery &query)
 {
     return query.parameter("endpoint").toString();
 }
 
-void LaravelRestController::registerResponse(RestLink::Response *response, const RestLink::ApiRunCallback &callback, const DataGate::DataQueryProgressCallback &onProgress)
-{
-    QObject::connect(response, &RestLink::Response::downloadProgress, response, onProgress);
-    QObject::connect(response, &RestLink::Response::finished, response, [callback, response] { callback(response); });
-    QObject::connect(response, &RestLink::Response::finished, response, &QObject::deleteLater);
 }

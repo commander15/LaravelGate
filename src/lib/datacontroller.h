@@ -1,5 +1,5 @@
-#ifndef LARAVELRESTCONTROLLER_H
-#define LARAVELRESTCONTROLLER_H
+#ifndef LARAVELGATE_DATACONTROLLER_H
+#define LARAVELGATE_DATACONTROLLER_H
 
 #include <LaravelGate/global.h>
 
@@ -7,12 +7,17 @@
 
 #include <RestLink/api.h>
 
-class LARAVELGATE_EXPORT LaravelRestController : public DataGate::AbstractDataController
+namespace LaravelGate {
+
+class LARAVELGATE_EXPORT DataController : public DataGate::AbstractDataController
 {
 public:
-    explicit LaravelRestController(RestLink::Api *api);
-    virtual ~LaravelRestController();
+    explicit DataController(RestLink::Api *api);
+    virtual ~DataController() = default;
 
+    static void registerResponse(RestLink::Response *response, const RestLink::ApiRunCallback &callback, const DataGate::DataQueryProgressCallback &onProgress);
+
+protected:
     void fetchSomeSearchSuggestions(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse) override;
     void fetchManyObjects(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse) override;
     void fetchOneObject(const DataGate::DataQuery &query, const DataGate::DataQueryProgressCallback &onProgress, const DataGate::DataQueryResponseCallback &onResponse) override;
@@ -24,8 +29,9 @@ public:
     //static int objectId(const Jsoner::Object &object);
 
 private:
-    static void registerResponse(RestLink::Response *response, const RestLink::ApiRunCallback &callback, const DataGate::DataQueryProgressCallback &onProgress);
     RestLink::Api *m_api;
 };
 
-#endif // LARAVELRESTCONTROLLER_H
+}
+
+#endif // LARAVELGATE_DATACONTROLLER_H
