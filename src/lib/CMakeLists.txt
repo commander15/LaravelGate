@@ -5,12 +5,14 @@ configure_file(config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h @ONLY)
 target_headers(LaravelGate
     PUBLIC
         global.h config.h
-        laravelrestcontroller.h
+        logincontroller.h
+        datacontroller.h
 )
 
 target_sources(LaravelGate
     PRIVATE
-        laravelrestcontroller.cpp
+        logincontroller.cpp
+        datacontroller.cpp
 )
 
 target_include_directories(LaravelGate PUBLIC $<INSTALL_INTERFACE:include>)
