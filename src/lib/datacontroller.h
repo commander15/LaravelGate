@@ -7,10 +7,14 @@
 
 #include <RestLink/api.h>
 
+#include <QtCore/qcoreapplication.h>
+
 namespace LaravelGate {
 
 class LARAVELGATE_EXPORT DataController : public DataGate::AbstractDataController
 {
+    Q_DECLARE_TR_FUNCTIONS(DataController)
+
 public:
     explicit DataController(RestLink::Api *api);
     virtual ~DataController() = default;

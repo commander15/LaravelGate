@@ -1,2 +1,3 @@
 # LaravelGate
- Laravel bridge based on DataGate library
+
+Laravel bridge based on DataGate library
