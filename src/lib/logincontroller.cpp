@@ -25,7 +25,7 @@ LoginController::LoginController(RestLink::Api *api)
 
 void LoginController::attemptLogIn(const DataGate::LoginQuery &query, const DataGate::DataQueryResponseCallback &callback)
 {
-    RestLink::Request request("/users/login");
+    RestLink::Request request("/user/login");
 
     Jsoner::Object object;
     object.put("email", query.identifier());
@@ -47,7 +47,7 @@ void LoginController::attemptLogIn(const DataGate::LoginQuery &query, const Data
 
 void LoginController::attemptLogOut(const DataGate::LoginQuery &query, const DataGate::DataQueryResponseCallback &callback)
 {
-    RestLink::Request request("/users/logout");
+    RestLink::Request request("/user/logout");
 
     const QVariant token = query.parameter("token");
     if (!token.isNull())
@@ -55,12 +55,10 @@ void LoginController::attemptLogOut(const DataGate::LoginQuery &query, const Dat
 
     m_api->post(request, query.object(), [=](RestLink::Response *response) {
         DataGate::DataResponse res;
-        res.setSuccess(response->isSuccess());
+        res.setSuccess(true);
 
         if (response->isSuccess()) {
             res.setObject(response->readJsonObject());
-        } else {
-            res.setCode(DataGate::AuthenticationError::BadCredentials);
         }
 
         callback(res);
